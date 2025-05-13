@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Instituto de Investigaciones y Museo Arqueológico Profesor Mariano Gambier </title>
+  <style>
+    body {
+      background-color: #fefae0;
+      font-family: sans-serif;
+      text-align: center;
+    }
+
+    h1 {
+      color: #606c38;
+    }
+
+    #puzzle {
+      width: 300px;
+      height: 300px;
+      margin: 20px auto;
+      display: grid;
+      grid-template-columns: repeat(3, 100px);
+      grid-template-rows: repeat(3, 100px);
+      gap: 2px;
+    }
+
+    .piece {
+      width: 100px;
+      height: 100px;
+      background-image: url('jarra.jpg'); /* Imagen local */
+      background-size: 300px 300px;
+      border: 1px solid #283618;
+      cursor: pointer;
+    }
+
+    .empty {
+      background: none;
+      border: 1px solid transparent;
+      cursor: default;
+    }
+
+    #message {
+      font-size: 18px;
+      color: #283618;
+      margin-top: 20px;
+    }
+
+    button {
+      margin-top: 10px;
+      padding: 10px;
+      background-color: #bc6c25;
+      border: none;
+      color: white;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #8b4513;
+    }
+  </style>
+</head>
+<body>
+
+<h1>Instituto de Investigaciones y Museo Arqueológico Profesor Mariano Gambier </h1>
+<div id="puzzle"></div>
+<button onclick="shuffle()">Mezclar</button>
+<div id="message"></div>
+
+<script>
+  const puzzle = document.getElementById('puzzle');
+  const message = document.getElementById('message');
+  let pieces = [];
+
+  function createPuzzle() {
+    puzzle.innerHTML = '';
+    pieces = [];
+
+    for (let i = 0; i < 8; i++) {
+      const piece = document.createElement('div');
+      piece.className = 'piece';
+      piece.dataset.index = i;
+      piece.style.backgroundPosition = `-${(i % 3) * 100}px -${Math.floor(i / 3) * 100}px`;
+      piece.addEventListener('click', () => movePiece(i));
+      pieces.push(piece);
+      puzzle.appendChild(piece);
+    }
+
+    // Agregar espacio vacío
+    const empty = document.createElement('div');
+    empty.className = 'empty';
+    pieces.push(empty);
+    puzzle.appendChild(empty);
+  }
+
+  function movePiece(index) {
+    const emptyIndex = pieces.findIndex(p => p.classList.contains('empty'));
+    if (isAdjacent(index, emptyIndex)) {
+      // Intercambiar nodos en el DOM
+      puzzle.insertBefore(pieces[index], pieces[emptyIndex]);
+      puzzle.insertBefore(pieces[emptyIndex], puzzle.children[index]);
+
+      // Intercambiar en array
+      [pieces[index], pieces[emptyIndex]] = [pieces[emptyIndex], pieces[index]];
+
+      checkWin();
+    }
+  }
+
+  function isAdjacent(i, j) {
+    const row1 = Math.floor(i / 3), col1 = i % 3;
+    const row2 = Math.floor(j / 3), col2 = j % 3;
+    return (Math.abs(row1 - row2) + Math.abs(col1 - col2)) === 1;
+  }
+
+  function shuffle() {
+    for (let i = pieces.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [pieces[i], pieces[j]] = [pieces[j], pieces[i]];
+    }
+    puzzle.innerHTML = '';
+    pieces.forEach(p => puzzle.appendChild(p));
+    message.textContent = '';
+  }
+
+  function checkWin() {
+    let isWin = true;
+    for (let i = 0; i < 8; i++) {
+      if (pieces[i].dataset.index != i) {
+        isWin = false;
+        break;
+      }
+    }
+    if (isWin) {
+      message.textContent = '¡Felicitaciones! Has armado al Cazador-Recolector y comprendido su mundo.';
+    }
+  }
+
+  createPuzzle();
+</script>
+
+</body>
+</html>
+
