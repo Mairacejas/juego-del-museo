@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Juego de Cartas - Cultura Angualasto</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background: #f2efe4;
+    }
+    h1 {
+      margin-top: 20px;
+    }
+    .puntaje {
+      font-size: 18px;
+      margin-top: 10px;
+    }   
+    .tablero {
+      display: grid;
+      grid-template-columns: repeat(4, 150px);
+      grid-gap: 10px;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .carta {
+      background-color: #d4b483;
+      border: 2px solid #8c5c2c;
+      height: 150px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 14px;
+      position: relative;
+    }
+    .carta.oculta {
+      background-color: #8c5c2c;
+      color: transparent;
+    }
+    .carta.acertada {
+      background-color: #a4d37d;
+      color: #000;
+      cursor: default;
+    }
+    .carta img {
+      max-width: 100%;
+      max-height: 100%;
+      display: none;
+    }
+    .carta.oculta img {
+      display: none;
+    }
+    .carta:not(.oculta) img {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+  <h1>Juego de Cartas - Cultura Angualasto</h1>
+  <div class="puntaje" id="puntaje">Puntaje: 0</div>
+  <div class="tablero" id="tablero"></div>
+
+  <script>
+    const conceptos = [
+      "Sistema de riego", "Llamas de carga", "Ceramica Angualasto",
+      "Aldea de Angualasto", "textil", "Comercio con Chile"
+    ];
+
+    const imagenes = [
+      "canal de riego.jpg", "llama.jpg", "ang.jpg",
+      "aldea.jpg", "textil.jpg", "chile.jpg"
+    ];
+
+    const cartas = [];
+
+    // Crear pares
+    conceptos.forEach((concepto, i) => {
+      cartas.push({ texto: concepto, tipo: "concepto", id: i });
+      cartas.push({ texto: imagenes[i], tipo: "imagen", id: i });
+    });
+
+    // Mezclar cartas
+    cartas.sort(() => 0.5 - Math.random());
+
+    const tablero = document.getElementById("tablero");
+    const puntajeElemento = document.getElementById("puntaje");
+    let seleccionadas = [];
+    let bloqueadas = false;
+    let puntaje = 0;
+
+    function actualizarPuntaje(valor) {
+      puntaje += valor;
+      puntajeElemento.innerText = `Puntaje: ${puntaje}`;
+    }
+
+    cartas.forEach((carta, index) => {
+      const div = document.createElement("div");
+      div.classList.add("carta", "oculta");
+      div.dataset.index = index;
+      div.dataset.id = carta.id;
+      div.dataset.tipo = carta.tipo;
+
+      if (carta.tipo === "concepto") {
+        div.innerText = carta.texto;
+      } else {
+        const img = document.createElement("img");
+        img.src = carta.texto;
+        img.alt = carta.texto;
+        div.appendChild(img);
+      }
+
+      div.addEventListener("click", () => {
+        if (bloqueadas || div.classList.contains("acertada") || !div.classList.contains("oculta")) return;
+
+        div.classList.remove("oculta");
+
+        seleccionadas.push(div);
+
+        if (seleccionadas.length === 2) {
+          bloqueadas = true;
+          const [c1, c2] = seleccionadas;
+          if (c1.dataset.id === c2.dataset.id && c1.dataset.tipo !== c2.dataset.tipo) {
+            c1.classList.add("acertada");
+            c2.classList.add("acertada");
+            actualizarPuntaje(10); // Incrementar puntaje por acierto
+          } else {
+            setTimeout(() => {
+              c1.classList.add("oculta");
+              c2.classList.add("oculta");
+              actualizarPuntaje(-5); // Decrementar puntaje por fallo
+            }, 1000);
+          }
+          setTimeout(() => {
+            seleccionadas = [];
+            bloqueadas = false;
+          }, 1000);
+        }
+      });
+
+      tablero.appendChild(div);
+    });
+  </script>
+</body>
+</html>
